@@ -1,9 +1,95 @@
 <!DOCTYPE html>
-<html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Job Market Narrative Visualization</title>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <script src="https://unpkg.com/d3-annotation@2.5.1/build/d3-annotation.min.js"></script>
+    <link rel="stylesheet" href="styles.css">
+</head>
 
 <body>
-    <h1>Hello World</h1>
-    <p>I'm hosted with GitHub Pages.</p>
+    <div class="container">
+        <!-- Navigation Bar -->
+        <nav class="navigation">
+            <div class="nav-item active" data-scene="1">Scene 1: Monthly Job Postings</div>
+            <div class="nav-item" data-scene="2">Scene 2: Salary Trends</div>
+            <div class="nav-item" data-scene="3">Scene 3: Popular Job Titles</div>
+        </nav>
+
+        <!-- Scene Container -->
+        <div class="scene-container">
+            <!-- Scene 1: Monthly Job Postings Bar Chart -->
+            <div class="scene" id="scene1">
+                <h2>AI Job Market Monthly Posting Trends (Jan 2024 - Apr 2025)</h2>
+                <div class="chart-container">
+                    <div id="chart1"></div>
+                </div>
+                <div class="scene-description">
+                    <p>This chart shows the monthly job posting trends in the AI job market from January 2024 to April
+                        2025. The bar chart
+                        clearly reveals which months had the highest job postings, reflecting market recruitment
+                        activity over time.</p>
+                </div>
+            </div>
+
+            <!-- Scene 2: Salary Trends Line Chart -->
+            <div class="scene" id="scene2" style="display: none;">
+                <h2>AI Job Salary Trends Over Time</h2>
+                <div class="controls">
+                    <div class="date-range">
+                        <label>Date Range: <span id="date-range-text">Jan 2024 - Dec 2024</span></label>
+                        <div id="date-slider"></div>
+                    </div>
+                </div>
+                <div class="chart-container">
+                    <div id="chart2"></div>
+                </div>
+                <div class="scene-description">
+                    <p>Use the slider to explore salary trends across different time periods. This helps understand the
+                        salary dynamics and seasonal changes in the AI job market.</p>
+                </div>
+            </div>
+
+            <!-- Scene 3: Popular Job Titles Bar Chart -->
+            <div class="scene" id="scene3" style="display: none;">
+                <h2>Monthly Popular AI Job Titles Analysis</h2>
+                <div class="controls">
+                    <div class="month-selector">
+                        <label for="month-select">Select Month:</label>
+                        <select id="month-select">
+                            <option value="1">January</option>
+                            <option value="2">February</option>
+                            <option value="3">March</option>
+                            <option value="4">April</option>
+                            <option value="5">May</option>
+                            <option value="6">June</option>
+                            <option value="7">July</option>
+                            <option value="8">August</option>
+                            <option value="9">September</option>
+                            <option value="10">October</option>
+                            <option value="11">November</option>
+                            <option value="12">December</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="chart-container">
+                    <div id="chart3"></div>
+                </div>
+                <div class="scene-description">
+                    <p>Select a specific month from the dropdown menu to view the 5 most popular AI job titles for that
+                        month. This helps understand market demand and job preferences across different periods.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tooltip -->
+        <div id="tooltip" class="tooltip"></div>
+    </div>
+
+    <script src="script.js"></script>
 </body>
 
 </html>
