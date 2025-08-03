@@ -515,7 +515,6 @@ function createScene2() {
   }
 }
 
-
 // Scene 3: Popular job titles bar chart
 function createScene3() {
   const container = document.getElementById("chart3");
@@ -539,6 +538,9 @@ function createScene3() {
     .append("svg")
     .attr("width", width + margin.left + margin.right)
     .attr("height", height + margin.top + margin.bottom)
+    .append("g");
+
+  const g = svg
     .append("g")
     .attr("transform", `translate(${margin.left},${margin.top})`);
 
@@ -547,6 +549,22 @@ function createScene3() {
     .map(([title, count]) => ({ title, count }))
     .sort((a, b) => b.count - a.count)
     .slice(0, 5);
+
+  // Add labels
+  g.append("text")
+    .attr("class", "axis-label")
+    .attr("text-anchor", "middle")
+    .attr("x", width / 2)
+    .attr("y", height + margin.bottom - 10)
+    .text("Number of Jobs");
+
+  g.append("text")
+    .attr("class", "axis-label")
+    .attr("text-anchor", "middle")
+    .attr("transform", "rotate(-90)")
+    .attr("x", -height / 2)
+    .attr("y", -margin.left + 20)
+    .text("Job Title");
 
   // Scales
   const x = d3
@@ -560,15 +578,31 @@ function createScene3() {
     .range([0, height])
     .padding(0.1);
 
+  // Add axes
+  g.append("g").call(d3.axisLeft(y));
+
+  g.append("g")
+    .attr("transform", `translate(0,${height})`)
+    .call(
+      d3
+        .axisBottom(x)
+        .tickValues(d3.range(0, d3.max(chartData, (d) => d.count) + 1))
+        .tickFormat(d3.format("d"))
+    );
+
   // Add grid
-  svg
-    .append("g")
+  g.append("g")
     .attr("class", "grid")
-    .call(d3.axisBottom(x).tickSize(-height).tickFormat(""));
+    .call(
+      d3
+        .axisBottom(x)
+        .tickSize(-height)
+        .tickValues(d3.range(0, d3.max(chartData, (d) => d.count) + 1))
+        .tickFormat("")
+    );
 
   // Draw bar chart
-  svg
-    .selectAll(".bar")
+  g.selectAll(".bar")
     .data(chartData)
     .enter()
     .append("rect")
@@ -583,32 +617,6 @@ function createScene3() {
       showJobTitleTooltip(event, d);
     })
     .on("mouseout", hideTooltip);
-
-  // Add axes
-  svg.append("g").call(d3.axisLeft(y));
-
-  svg
-    .append("g")
-    .attr("transform", `translate(0,${height})`)
-    .call(d3.axisBottom(x));
-
-  // Add labels
-  svg
-    .append("text")
-    .attr("class", "axis-label")
-    .attr("text-anchor", "middle")
-    .attr("x", width / 2)
-    .attr("y", height + margin.bottom - 10)
-    .text("Number of Jobs");
-
-  svg
-    .append("text")
-    .attr("class", "axis-label")
-    .attr("text-anchor", "middle")
-    .attr("transform", "rotate(-90)")
-    .attr("x", -height / 2)
-    .attr("y", -margin.left + 20)
-    .text("Job Title");
 }
 
 // Tooltip functions
