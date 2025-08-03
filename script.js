@@ -331,7 +331,7 @@ function createScene2() {
   const container = document.getElementById("chart2");
   container.innerHTML = "";
 
-  const margin = { top: 40, right: 30, bottom: 60, left: 80 };
+  const margin = { top: 40, right: 60, bottom: 60, left: 80 };
   const width = container.clientWidth - margin.left - margin.right;
   const height = 400 - margin.top - margin.bottom;
 
@@ -400,42 +400,6 @@ function createScene2() {
     ])
     .range([height, 0]);
 
-  // Add grid
-  g.append("g")
-    .attr("class", "grid")
-    .call(d3.axisLeft(y).tickSize(-width).tickFormat(""));
-
-  // Create line generator
-  const line = d3
-    .line()
-    .x((d) => x(d.date))
-    .y((d) => y(d.avgSalary))
-    .curve(d3.curveMonotoneX);
-
-  // Draw line - only connect points with data
-  g.append("path")
-    .datum(chartData.filter((d) => d.avgSalary > 0))
-    .attr("class", "line")
-    .attr("fill", "none")
-    .attr("stroke", "#667eea")
-    .attr("stroke-width", 3)
-    .attr("d", line);
-
-  // Add data points - only show points for months with data
-  g.selectAll(".dot")
-    .data(chartData.filter((d) => d.avgSalary > 0))
-    .enter()
-    .append("circle")
-    .attr("class", "dot")
-    .attr("cx", (d) => x(d.date))
-    .attr("cy", (d) => y(d.avgSalary))
-    .attr("r", 4)
-    .attr("fill", "#667eea")
-    .on("mouseover", function (event, d) {
-      showSalaryTooltip(event, d);
-    })
-    .on("mouseout", hideTooltip);
-
   // Add axes
   g.append("g")
     .attr("transform", `translate(0,${height})`)
@@ -445,62 +409,112 @@ function createScene2() {
     d3.axisLeft(y).tickFormat((d) => `$${d3.format(",.0f")(d)}`)
   );
 
-  // Create slider
-  createDateSlider(chartData);
-}
+  // Add grid
+  g.append("g")
+    .attr("class", "grid")
+    .call(d3.axisLeft(y).tickSize(-width).tickFormat(""));
 
-// Create date slider
-function createDateSlider(data) {
-  const sliderContainer = document.getElementById("date-slider");
-  sliderContainer.innerHTML = "";
+  // line path generator
+  const line = d3
+    .line()
+    .x((d) => x(d.date))
+    .y((d) => y(d.avgSalary));
 
-  const width = 300;
-  const height = 40;
+  // add line to chart
+  g.append("path")
+    .datum(chartData.filter((d) => d.avgSalary > 0))
+    .attr("class", "line")
+    .attr("fill", "none")
+    .attr("stroke", "#667eea")
+    .attr("stroke-width", 3)
+    .attr("d", line(chartData.filter((d) => d.avgSalary > 0)));
 
-  const svg = d3
-    .select(sliderContainer)
-    .append("svg")
-    .attr("width", width)
-    .attr("height", height);
+  // Tooltip
+  const focus = g.append("g").attr("class", "focus").style("display", "none");
 
-  const x = d3
-    .scaleTime()
-    .domain(d3.extent(data, (d) => d.date))
-    .range([20, width - 20]);
-
-  // Draw slider track
-  svg
-    .append("line")
-    .attr("x1", 20)
-    .attr("y1", height / 2)
-    .attr("x2", width - 20)
-    .attr("y2", height / 2)
-    .attr("stroke", "#ccc")
+  // Add focus circle
+  focus
+    .append("circle")
+    .attr("r", 6)
+    .attr("fill", "#667eea")
+    .attr("stroke", "white")
     .attr("stroke-width", 2);
 
-  // Create slider handle
-  const slider = svg
-    .append("circle")
-    .attr("cx", x(data[0].date))
-    .attr("cy", height / 2)
-    .attr("r", 8)
-    .attr("fill", "#667eea")
-    .attr("cursor", "pointer")
-    .call(
-      d3.drag().on("drag", function (event) {
-        const newX = Math.max(20, Math.min(width - 20, event.x));
-        slider.attr("cx", newX);
-        updateDateRange(newX, x);
-      })
-    );
+  // Add focus text
+  focus
+    .append("text")
+    .attr("x", 9)
+    .attr("dy", ".35em")
+    .attr("font-size", "12px")
+    .attr("font-weight", "bold")
+    .attr("fill", "#333");
 
-  // Update date range display
-  function updateDateRange(xPos, scale) {
-    const date = scale.invert(xPos);
-    document.getElementById("date-range-text").textContent =
-      date.toLocaleDateString("en-US", { month: "short", year: "numeric" });
+  // Add hover lines
+  focus
+    .append("line")
+    .attr("class", "x-hover-line")
+    .attr("stroke", "#667eea")
+    .attr("stroke-width", 1)
+    .attr("stroke-dasharray", "3,3")
+    .attr("y1", 0)
+    .attr("y2", 0);
+
+  focus
+    .append("line")
+    .attr("class", "y-hover-line")
+    .attr("stroke", "#667eea")
+    .attr("stroke-width", 1)
+    .attr("stroke-dasharray", "3,3")
+    .attr("x1", 0)
+    .attr("x2", 0);
+
+  // Add overlay for mouse tracking
+  g.append("rect")
+    .attr("class", "overlay")
+    .attr("width", width)
+    .attr("height", height)
+    .style("fill", "none")
+    .style("pointer-events", "all")
+    .on("mouseover", () => focus.style("display", null))
+    .on("mouseout", () => focus.style("display", "none"))
+    .on("mousemove", mousemove);
+
+  // Mouse move function
+  function mousemove(event) {
+    const mouseX = d3.pointer(event)[0];
+    const x0 = x.invert(mouseX);
+    const dataWithValues = chartData.filter((d) => d.avgSalary > 0);
+
+    if (dataWithValues.length === 0) return;
+
+    const bisectDate = d3.bisector((d) => d.date).left;
+    const i = bisectDate(dataWithValues, x0, 1);
+
+    if (i === 0) {
+      const d = dataWithValues[0];
+      focus.attr("transform", `translate(${x(d.date)},${y(d.avgSalary)})`);
+      focus.select("text").text(`$${d3.format(",.0f")(d.avgSalary)}`);
+      focus.select(".x-hover-line").attr("y2", height - y(d.avgSalary));
+      focus.select(".y-hover-line").attr("x2", -x(d.date));
+    } else if (i >= dataWithValues.length) {
+      const d = dataWithValues[dataWithValues.length - 1];
+      focus.attr("transform", `translate(${x(d.date)},${y(d.avgSalary)})`);
+      focus.select("text").text(`$${d3.format(",.0f")(d.avgSalary)}`);
+      focus.select(".x-hover-line").attr("y2", height - y(d.avgSalary));
+      focus.select(".y-hover-line").attr("x2", -x(d.date));
+    } else {
+      const d0 = dataWithValues[i - 1];
+      const d1 = dataWithValues[i];
+      const d = x0 - d0.date > d1.date - x0 ? d1 : d0;
+
+      focus.attr("transform", `translate(${x(d.date)},${y(d.avgSalary)})`);
+      focus.select("text").text(`$${d3.format(",.0f")(d.avgSalary)}`);
+      focus.select(".x-hover-line").attr("y2", height - y(d.avgSalary));
+      focus.select(".y-hover-line").attr("x2", -x(d.date));
+    }
   }
 }
+
 
 // Scene 3: Popular job titles bar chart
 function createScene3() {
@@ -606,17 +620,6 @@ function showTooltip(event, d) {
         Average Salary: $${d3.format(",.0f")(d.avgSalary)}<br>
         Average Experience: ${d.avgExperience.toFixed(1)} years<br>
         Average Benefits Score: ${d.avgBenefits.toFixed(1)}
-    `;
-  tooltip.style.opacity = 1;
-  tooltip.style.left = event.pageX + 10 + "px";
-  tooltip.style.top = event.pageY - 10 + "px";
-}
-
-function showSalaryTooltip(event, d) {
-  const tooltip = document.getElementById("tooltip");
-  tooltip.innerHTML = `
-        <strong>${d.date.getMonth() + 1}/${d.date.getFullYear()}</strong><br>
-        Average Salary: $${d3.format(",.0f")(d.avgSalary)}
     `;
   tooltip.style.opacity = 1;
   tooltip.style.left = event.pageX + 10 + "px";
