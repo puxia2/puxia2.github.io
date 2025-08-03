@@ -12,6 +12,10 @@
 
 <body>
     <div class="container">
+        <div class="banner">
+            <h1>US AI Job Market Narrative Visualization</h1>
+            <span>By: Pu Xia</span>
+        </div>
         <!-- Navigation Bar -->
         <nav class="navigation">
             <div class="nav-item active" data-scene="1">Scene 1: Monthly Job Postings</div>
@@ -29,9 +33,7 @@
                 </div>
                 <div class="scene-description">
                     <p>This chart shows the monthly job posting trends in the AI job market from January 2024 to April
-                        2025. The bar chart
-                        clearly reveals which months had the highest job postings, reflecting market recruitment
-                        activity over time.</p>
+                        2025. Hover over a bar to get more information about that month.</p>
                 </div>
             </div>
 
@@ -49,29 +51,34 @@
                 </div>
                 <div class="scene-description">
                     <p>Use the slider to explore salary trends across different time periods. This helps understand the
-                        salary dynamics and seasonal changes in the AI job market.</p>
+                        salary dynamics and seasonal changes in the AI job market.
+                        Hover over the point to see the exact average salary for that month.</p>
                 </div>
             </div>
 
             <!-- Scene 3: Popular Job Titles Bar Chart -->
             <div class="scene" id="scene3" style="display: none;">
-                <h2>Monthly Popular AI Job Titles Analysis</h2>
+                <h2>Monthly Popular AI Job Titles Analysis (Jan 2024 - Apr 2025)</h2>
                 <div class="controls">
                     <div class="month-selector">
                         <label for="month-select">Select Month:</label>
                         <select id="month-select">
-                            <option value="1">January</option>
-                            <option value="2">February</option>
-                            <option value="3">March</option>
-                            <option value="4">April</option>
-                            <option value="5">May</option>
-                            <option value="6">June</option>
-                            <option value="7">July</option>
-                            <option value="8">August</option>
-                            <option value="9">September</option>
-                            <option value="10">October</option>
-                            <option value="11">November</option>
-                            <option value="12">December</option>
+                            <option value="2024-01">Jan 2024</option>
+                            <option value="2024-02">Feb 2024</option>
+                            <option value="2024-03">Mar 2024</option>
+                            <option value="2024-04">Apr 2024</option>
+                            <option value="2024-05">May 2024</option>
+                            <option value="2024-06">Jun 2024</option>
+                            <option value="2024-07">Jul 2024</option>
+                            <option value="2024-08">Aug 2024</option>
+                            <option value="2024-09">Sep 2024</option>
+                            <option value="2024-10">Oct 2024</option>
+                            <option value="2024-11">Nov 2024</option>
+                            <option value="2024-12">Dec 2024</option>
+                            <option value="2025-01">Jan 2025</option>
+                            <option value="2025-02">Feb 2025</option>
+                            <option value="2025-03">Mar 2025</option>
+                            <option value="2025-04">Apr 2025</option>
                         </select>
                     </div>
                 </div>
@@ -80,7 +87,9 @@
                 </div>
                 <div class="scene-description">
                     <p>Select a specific month from the dropdown menu to view the 5 most popular AI job titles for that
-                        month. This helps understand market demand and job preferences across different periods.</p>
+                        month from January 2024 to April 2025. This helps understand market demand and job preferences
+                        across different periods.
+                        Hover over a bar to see the exact number of job postings for that job title in that month.</p>
                 </div>
             </div>
         </div>

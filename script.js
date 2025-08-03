@@ -163,7 +163,9 @@ function createScene1() {
     .select(container)
     .append("svg")
     .attr("width", width + margin.left + margin.right)
-    .attr("height", height + margin.top + margin.bottom)
+    .attr("height", height + margin.top + margin.bottom);
+
+  const g = svg
     .append("g")
     .attr("transform", `translate(${margin.left},${margin.top})`);
 
@@ -202,10 +204,37 @@ function createScene1() {
 
   const chartData = allMonths;
 
-  // Find peak month
+  // Find the month with job postings more than 50
+  // const highCountMonth = chartData.filter((d) => d.count >= 50);
+
+  // Find the most popular month
   const maxMonth = chartData.reduce((max, d) =>
     d.count > max.count ? d : max
   );
+
+  // Find the least popular month
+  const minMonth = chartData.reduce((min, d) =>
+    d.count < min.count ? d : min
+  );
+
+  // ---------------------------------------
+  // Draw Chart
+
+  // Add labels
+  g.append("text")
+    .attr("class", "x-label")
+    .attr("text-anchor", "middle")
+    .attr("x", width / 2)
+    .attr("y", height + margin.bottom)
+    .text("Month");
+
+  g.append("text")
+    .attr("class", "y-label")
+    .attr("text-anchor", "middle")
+    .attr("transform", "rotate(-90)")
+    .attr("x", -height / 2)
+    .attr("y", -margin.left + 20)
+    .text("Number of Job Postings");
 
   // Scales
   const x = d3
@@ -219,15 +248,22 @@ function createScene1() {
     .domain([0, d3.max(chartData, (d) => d.count) * 1.1])
     .range([height, 0]);
 
+  g.append("g")
+    .attr("transform", `translate(0,${height})`)
+    .call(d3.axisBottom(x))
+    .selectAll("text")
+    .style("text-anchor", "end")
+    .attr("transform", "rotate(-45)");
+
+  g.append("g").call(d3.axisLeft(y));
+
   // Add grid
-  svg
-    .append("g")
+  g.append("g")
     .attr("class", "grid")
     .call(d3.axisLeft(y).tickSize(-width).tickFormat(""));
 
   // Draw bar chart
-  svg
-    .selectAll(".bar")
+  g.selectAll(".bar")
     .data(chartData)
     .enter()
     .append("rect")
@@ -237,64 +273,57 @@ function createScene1() {
     .attr("y", (d) => y(d.count))
     .attr("height", (d) => height - y(d.count))
     .attr("fill", (d) =>
-      d.displayMonth === maxMonth.displayMonth ? "#667eea" : "#764ba2"
+      maxMonth.displayMonth === d.displayMonth ||
+      minMonth.displayMonth === d.displayMonth
+        ? "#667eea"
+        : "#764ba2"
     )
-    .attr("opacity", 0.8)
+    .attr("opacity", 0.6)
     .on("mouseover", function (event, d) {
       showTooltip(event, d);
     })
     .on("mouseout", hideTooltip);
 
-  // Add axes
-  svg
-    .append("g")
-    .attr("transform", `translate(0,${height})`)
-    .call(d3.axisBottom(x))
-    .selectAll("text")
-    .style("text-anchor", "middle")
-    .attr("transform", "rotate(-45)");
-
-  svg.append("g").call(d3.axisLeft(y));
-
-  // Add labels
-  svg
-    .append("text")
-    .attr("class", "axis-label")
-    .attr("text-anchor", "middle")
-    .attr("x", width / 2)
-    .attr("y", height + margin.bottom - 10)
-    .text("Month");
-
-  svg
-    .append("text")
-    .attr("class", "axis-label")
-    .attr("text-anchor", "middle")
-    .attr("transform", "rotate(-90)")
-    .attr("x", -height / 2)
-    .attr("y", -margin.left + 20)
-    .text("Number of Job Postings");
-
   // Add annotations
-  svg
-    .append("text")
+  g.append("text")
     .attr("class", "annotation")
-    .attr("x", x(maxMonth.displayMonth) + x.bandwidth() / 2)
-    .attr("y", y(maxMonth.count) - 15)
+    .attr("x", x(maxMonth.displayMonth) + width / 3)
+    .attr("y", y(maxMonth.count) - 60)
     .attr("text-anchor", "middle")
-    .attr("font-size", "12px")
+    .attr("font-size", "18px")
     .attr("font-weight", "bold")
     .attr("fill", "#667eea")
-    .text(`Peak: ${maxMonth.count} jobs`);
+    .selectAll("tspan")
+    .data([
+      "AI companies tend to offer",
+      "the most job opportunities in March (Spring)",
+      "and least in August (Summer).",
+    ])
+    .enter()
+    .append("tspan")
+    .attr("x", x(maxMonth.displayMonth) + width / 3)
+    .attr("dy", "1.2em")
+    .text((d) => d);
 
-  svg
-    .append("line")
-    .attr("class", "annotation-connector")
-    .attr("x1", x(maxMonth.displayMonth) + x.bandwidth() / 2)
-    .attr("y1", y(maxMonth.count) - 10)
+  g.append("line")
+    .attr("class", "arrow-1")
+    .attr("x1", x(maxMonth.displayMonth) + width / 4 - 10)
+    .attr("y1", y(maxMonth.count) - 20)
     .attr("x2", x(maxMonth.displayMonth) + x.bandwidth() / 2)
-    .attr("y2", y(maxMonth.count) + 5)
+    .attr("y2", y(maxMonth.count) - 5)
     .attr("stroke", "#667eea")
-    .attr("stroke-width", 2);
+    .attr("stroke-width", 3)
+    .attr("stroke-dasharray", "5,5");
+
+  g.append("line")
+    .attr("class", "arrow-2")
+    .attr("x1", x(minMonth.displayMonth) + x.bandwidth() / 2)
+    .attr("y1", y(minMonth.count) - 125)
+    .attr("x2", x(minMonth.displayMonth) + x.bandwidth() / 2)
+    .attr("y2", y(minMonth.count) - 5)
+    .attr("stroke", "#667eea")
+    .attr("stroke-width", 3)
+    .attr("stroke-dasharray", "5,5");
 }
 
 // Scene 2: Salary trends line chart
@@ -310,17 +339,49 @@ function createScene2() {
     .select(container)
     .append("svg")
     .attr("width", width + margin.left + margin.right)
-    .attr("height", height + margin.top + margin.bottom)
+    .attr("height", height + margin.top + margin.bottom);
+
+  const g = svg
     .append("g")
     .attr("transform", `translate(${margin.left},${margin.top})`);
 
-  // Prepare data
-  const chartData = Object.keys(salaryData)
-    .sort()
-    .map((key) => ({
-      date: salaryData[key].date,
-      avgSalary: salaryData[key].avgSalary,
-    }));
+  // Prepare data - create continuous timeline from Jan 2024 to Apr 2025
+  const allMonths = [];
+  const startDate = new Date(2024, 0, 1); // January 2024
+  const endDate = new Date(2025, 3, 1); // April 2025
+
+  for (
+    let d = new Date(startDate);
+    d <= endDate;
+    d.setMonth(d.getMonth() + 1)
+  ) {
+    const year = d.getFullYear();
+    const month = d.getMonth() + 1;
+    const monthKey = `${year}-${month.toString().padStart(2, "0")}`;
+
+    allMonths.push({
+      date: new Date(d),
+      avgSalary: salaryData[monthKey] ? salaryData[monthKey].avgSalary : 0,
+    });
+  }
+
+  const chartData = allMonths;
+
+  // Add labels
+  g.append("text")
+    .attr("class", "axis-label")
+    .attr("text-anchor", "middle")
+    .attr("x", width / 2)
+    .attr("y", height + margin.bottom - 10)
+    .text("Time");
+
+  g.append("text")
+    .attr("class", "axis-label")
+    .attr("text-anchor", "middle")
+    .attr("transform", "rotate(-90)")
+    .attr("x", -height / 2)
+    .attr("y", -margin.left + 20)
+    .text("Average Salary (USD)");
 
   // Scales
   const x = d3
@@ -330,12 +391,17 @@ function createScene2() {
 
   const y = d3
     .scaleLinear()
-    .domain([0, d3.max(chartData, (d) => d.avgSalary) * 1.1])
+    .domain([
+      d3.min(
+        chartData.filter((d) => d.avgSalary > 0),
+        (d) => d.avgSalary
+      ) * 0.9,
+      d3.max(chartData, (d) => d.avgSalary) * 1.1,
+    ])
     .range([height, 0]);
 
   // Add grid
-  svg
-    .append("g")
+  g.append("g")
     .attr("class", "grid")
     .call(d3.axisLeft(y).tickSize(-width).tickFormat(""));
 
@@ -346,20 +412,18 @@ function createScene2() {
     .y((d) => y(d.avgSalary))
     .curve(d3.curveMonotoneX);
 
-  // Draw line
-  svg
-    .append("path")
-    .datum(chartData)
+  // Draw line - only connect points with data
+  g.append("path")
+    .datum(chartData.filter((d) => d.avgSalary > 0))
     .attr("class", "line")
     .attr("fill", "none")
     .attr("stroke", "#667eea")
     .attr("stroke-width", 3)
     .attr("d", line);
 
-  // Add data points
-  svg
-    .selectAll(".dot")
-    .data(chartData)
+  // Add data points - only show points for months with data
+  g.selectAll(".dot")
+    .data(chartData.filter((d) => d.avgSalary > 0))
     .enter()
     .append("circle")
     .attr("class", "dot")
@@ -373,32 +437,13 @@ function createScene2() {
     .on("mouseout", hideTooltip);
 
   // Add axes
-  svg
-    .append("g")
+  g.append("g")
     .attr("transform", `translate(0,${height})`)
-    .call(d3.axisBottom(x).tickFormat(d3.timeFormat("%Y/%m")));
+    .call(d3.axisBottom(x).tickFormat(d3.timeFormat("%b %Y")));
 
-  svg
-    .append("g")
-    .call(d3.axisLeft(y).tickFormat((d) => `$${d3.format(",.0f")(d)}`));
-
-  // Add labels
-  svg
-    .append("text")
-    .attr("class", "axis-label")
-    .attr("text-anchor", "middle")
-    .attr("x", width / 2)
-    .attr("y", height + margin.bottom - 10)
-    .text("Time");
-
-  svg
-    .append("text")
-    .attr("class", "axis-label")
-    .attr("text-anchor", "middle")
-    .attr("transform", "rotate(-90)")
-    .attr("x", -height / 2)
-    .attr("y", -margin.left + 20)
-    .text("Average Salary (USD)");
+  g.append("g").call(
+    d3.axisLeft(y).tickFormat((d) => `$${d3.format(",.0f")(d)}`)
+  );
 
   // Create slider
   createDateSlider(chartData);
@@ -452,9 +497,8 @@ function createDateSlider(data) {
   // Update date range display
   function updateDateRange(xPos, scale) {
     const date = scale.invert(xPos);
-    document.getElementById("date-range-text").textContent = `${
-      date.getMonth() + 1
-    }/${date.getFullYear()}`;
+    document.getElementById("date-range-text").textContent =
+      date.toLocaleDateString("en-US", { month: "short", year: "numeric" });
   }
 }
 
@@ -464,7 +508,7 @@ function createScene3() {
   container.innerHTML = "";
 
   const selectedMonth = document.getElementById("month-select").value;
-  const monthKey = `2024-${selectedMonth.toString().padStart(2, "0")}`;
+  const monthKey = selectedMonth; // Now the value is already in the format "2024-01", "2024-02", etc.
 
   if (!jobTitleData[monthKey]) {
     container.innerHTML =
