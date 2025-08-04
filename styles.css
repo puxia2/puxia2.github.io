@@ -48,6 +48,40 @@ body {
     margin-top: 5px;
 }
 
+.data-source {
+    margin-top: 15px;
+    padding-top: 15px;
+    border-top: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.data-source a {
+    color: rgba(255, 255, 255, 0.85);
+    text-decoration: none;
+    font-size: 0.95em;
+    font-weight: 400;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 16px;
+    border-radius: 25px;
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+    transition: all 0.3s ease;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.data-source a:hover {
+    background: rgba(255, 255, 255, 0.2);
+    color: white;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+}
+
+.data-icon {
+    font-style: normal;
+    font-size: 1.1em;
+}
+
 /* Navigation bar styles */
 .navigation {
     display: flex;
@@ -242,6 +276,17 @@ body {
 
     .banner span {
         font-size: 1em;
+    }
+
+    .data-source {
+        margin-top: 12px;
+        padding-top: 12px;
+    }
+
+    .data-source a {
+        font-size: 0.85em;
+        padding: 6px 12px;
+        gap: 6px;
     }
 
     .navigation {
